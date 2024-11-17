@@ -31,15 +31,15 @@ def song_loader(page):
         response_2 = requests.get(song, headers=fake_ua, proxies=proxy, stream=True, timeout=10)
         name = re.sub(r'(https://rus.hitmotop.com/get/music/\d+/)', '', song)
         print(name)
-        with open(fr'C:\Users\Стас\Music\rt\{name}', 'wb') as f1:
+        with open(fr'C:\Users\Стас\Music\test\{name}', 'wb') as f1:
             for chunk in response_2.iter_content(chunk_size=1024 ** 2):
                 f1.write(chunk)
-        time.sleep(3) # задержка на скачу 3 секунды
+        time.sleep(1) # задержка на скачу 3 секунды
 
 
 if __name__ == '__main__':
 
-    url = "https://rus.hitmotop.com/genre/18"
+    url = "https://rus.hitmotop.com/search?q=linking%20park"
     session = requests.Session()
 
     try:
@@ -51,9 +51,7 @@ if __name__ == '__main__':
 
         soup = BeautifulSoup(response.text, 'lxml')
 
-        during_page = soup.find('section', class_='pagination')
 
-        # url = 'https://rus.hitmotop.com/' + during_page.find('a', class_='pagination__link pagination__btn').get('href').replace(' ', '%20')
 
         song_loader(soup)
     except EOFError as err:
