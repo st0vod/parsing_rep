@@ -21,22 +21,23 @@ session = requests.Session()
 
 url = input('Укажите ссылку:')
 user_path = input('Укажите путь куда сохранить песни:')
+
 try:
     # https://rus.hitmotop.com/search/start/48?q=sabaton
     # https://rus.hitmotop.com/genre/39/start/48
     i = 0
+    temp = ''
 
     while True:
         if i == 0:
             response = session.get(url, timeout=10)
         elif 'search' in url:
             response = session.get(f'https://rus.hitmotop.com/search/start/{i}{re.search(r'\?q=.+', url)}', timeout=10)
-        elif 'genre' in url:
-            response = session.get(f'{url}/start/{i}', timeout=10)
         else:
-            raise EOFError("Can't find href...")
+            response = session.get(f'{url}/start/{i}', timeout=10)
 
         if response.status_code == 200:
+            response.encoding = 'utf-8'
             soup = BeautifulSoup(response.text, 'lxml')
 
             music_card = str(soup.select('.tracks__list'))
@@ -46,17 +47,23 @@ try:
             ua = UserAgent(min_percentage=4)
             fake_ua = {'User-Agent': ua.random}
             response_2 = requests.get(song, headers=fake_ua, proxies={"http": "http://143.110.226.180:8888"}, stream=True, timeout=10)
+            response_2.encoding = 'utf-8'
 
             name = re.sub(r'(https://rus.hitmotop.com/get/music/\d+/)', '', song)
-            print(name)
+
+            if temp == name:
+                raise IndexError('Finished...')
+
+            temp = name
             path = f'{user_path}\\{name}'
 
             with open(path, 'wb') as f1:
                 for chunk in response_2.iter_content(chunk_size=1024 ** 2):
                     f1.write(chunk)
-            print(f'{i + 1}. {path} скачено')
+                print(f'{i + 1}. {path} скачено')
             i += 1
             time.sleep(2)
+
         else:
             print('Download finished')
             break
@@ -65,3 +72,5 @@ except EOFError as err:
     print(f'Stop parsing, ERROR: {err}')
 except KeyboardInterrupt:
     print(f'Program stopped')
+except IndexError as err:
+    print(err)
